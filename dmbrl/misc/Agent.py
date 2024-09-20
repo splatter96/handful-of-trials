@@ -60,6 +60,8 @@ class Agent:
             A.append(policy.act(O[t], t))
             times.append(time.time() - start)
 
+            # print(f"Took {time.time() - start}s to calculate action")
+
             if self.noise_stddev is None:
                 obs, reward, done, info = self.env.step(A[t])
             else:

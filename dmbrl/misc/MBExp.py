@@ -115,7 +115,10 @@ class MBExperiment:
             if self.nrecord > 0:
                 for item in filter(lambda f: f.endswith(".json"), os.listdir(iter_dir)):
                     os.remove(os.path.join(iter_dir, item))
+
+            print("starting sampling")
             for j in range(max(self.neval, self.nrollouts_per_iter) - self.nrecord):
+                print("sampling one")
                 samples.append(
                     self.agent.sample(
                         self.task_hor, self.policy
@@ -142,6 +145,7 @@ class MBExperiment:
             if len(os.listdir(iter_dir)) == 0:
                 os.rmdir(iter_dir)
 
+            print(f"Starting training with {len(samples)} samples")
             if i < self.ntrain_iters - 1:
                 self.policy.train(
                     [sample["obs"] for sample in samples],

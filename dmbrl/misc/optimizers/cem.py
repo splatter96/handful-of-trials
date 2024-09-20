@@ -2,7 +2,9 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
 
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
+from tensorflow.python.client import timeline
 import numpy as np
 import scipy.stats as stats
 
@@ -110,10 +112,24 @@ class CEMOptimizer(Optimizer):
             init_var (np.ndarray): The variance of the initial candidate distribution.
         """
         if self.tf_compatible:
+            # add additional options to trace the session execution
+            # options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
+            # run_metadata = tf.RunMetadata()
+            # sess.run(res, options=options, run_metadata=run_metadata)
             sol, solvar = self.tf_sess.run(
                 [self.mean, self.var],
-                feed_dict={self.init_mean: init_mean, self.init_var: init_var}
+                feed_dict={self.init_mean: init_mean, self.init_var: init_var},
+                # options=options,
+                # run_metadata=run_metadata
             )
+
+            # Create the Timeline object, and write it to a json file
+            # fetched_timeline = timeline.Timeline(run_metadata.step_stats)
+            # chrome_trace = fetched_timeline.generate_chrome_trace_format()
+            # print(chrome_trace)
+            # with open('timeline_01.json', 'w') as f:
+                # f.write(chrome_trace)
+
         else:
             mean, var, t = init_mean, init_var, 0
             X = stats.truncnorm(-2, 2, loc=np.zeros_like(mean), scale=np.ones_like(mean))

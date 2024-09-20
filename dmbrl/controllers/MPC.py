@@ -4,7 +4,8 @@ from __future__ import absolute_import
 
 import os
 
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 import numpy as np
 from scipy.io import savemat
 
@@ -83,7 +84,7 @@ class MPC(Controller):
         self.ac_ub = np.minimum(self.ac_ub, params.get("ac_ub", self.ac_ub))
         self.ac_lb = np.maximum(self.ac_lb, params.get("ac_lb", self.ac_lb))
         self.update_fns = params.get("update_fns", [])
-        self.per = params.get("per", 1)
+        self.per = params.get("per", 10)
 
         self.model = get_required_argument(
             params.prop_cfg.model_init_cfg, "model_constructor", "Must provide a model constructor."
@@ -211,7 +212,9 @@ class MPC(Controller):
         if self.model.is_tf_model:
             self.sy_cur_obs.load(obs, self.model.sess)
 
+        #print("obtaining solution")
         soln = self.optimizer.obtain_solution(self.prev_sol, self.init_var)
+        #print("obtained solution")
         self.prev_sol = np.concatenate([np.copy(soln)[self.per*self.dU:], np.zeros(self.per*self.dU)])
         self.ac_buf = soln[:self.per*self.dU].reshape(-1, self.dU)
 
@@ -336,7 +339,8 @@ class MPC(Controller):
             # Obtain model predictions
             inputs = tf.concat([proc_obs, acs], axis=-1)
             mean, var = self.model.create_prediction_tensors(inputs)
-            if self.model.is_probabilistic and not self.ign_var:
+            # if self.model.is_probabilistic and not self.ign_var:
+            if False:
                 predictions = mean + tf.random_normal(shape=tf.shape(mean), mean=0, stddev=1) * tf.sqrt(var)
                 if self.prop_mode == "MM":
                     model_out_dim = predictions.get_shape()[-1].value

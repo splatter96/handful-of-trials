@@ -3,7 +3,8 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import numpy as np
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 
 from .optimizer import Optimizer
 
@@ -64,6 +65,7 @@ class RandomOptimizer(Optimizer):
             init_mean (np.ndarray): The mean of the initial candidate distribution.
             init_var (np.ndarray): The variance of the initial candidate distribution.
         """
+        print("random optimizer")
         if self.tf_compatible:
             return self.tf_sess.run(self.solution)
         else:
